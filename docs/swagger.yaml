@@ -1,0 +1,696 @@
+definitions:
+  controllers.ErrorResponse:
+    properties:
+      error: {}
+    type: object
+  controllers.ResponseCustom:
+    properties:
+      data: {}
+    type: object
+  controllers.ResponseID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dtos.CreateItemInput:
+    properties:
+      name:
+        minLength: 2
+        type: string
+      price:
+        minimum: 1
+        type: number
+    required:
+    - name
+    - price
+    type: object
+  dtos.CreateOrdersInput:
+    properties:
+      orders_items:
+        items:
+          $ref: '#/definitions/dtos.CreateOrdersItemsInput'
+        minItems: 1
+        type: array
+      status:
+        maxLength: 20
+        minLength: 3
+        type: string
+      user_id:
+        minimum: 0
+        type: integer
+    required:
+    - orders_items
+    - status
+    - user_id
+    type: object
+  dtos.CreateOrdersItemsInput:
+    properties:
+      items_id:
+        minimum: 0
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - items_id
+    - quantity
+    type: object
+  dtos.CreateUserInput:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - phone
+    type: object
+  dtos.UpdateItemInput:
+    properties:
+      name:
+        minLength: 2
+        type: string
+      price:
+        minimum: 1
+        type: number
+    type: object
+  dtos.UpdateOrdersInput:
+    properties:
+      status:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - status
+    type: object
+  dtos.UpdateUserInput:
+    properties:
+      email:
+        minLength: 4
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 6
+        type: string
+    type: object
+  models.Items:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  models.Orders:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      orders_items:
+        items:
+          $ref: '#/definitions/models.OrdersItems'
+        type: array
+      status:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      users:
+        $ref: '#/definitions/models.Users'
+      users_id:
+        type: integer
+    type: object
+  models.OrdersItems:
+    properties:
+      items:
+        $ref: '#/definitions/models.Items'
+      items_id:
+        type: integer
+      orders_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  models.Users:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  validations.ErrorMsg:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: Ecom mini app
+paths:
+  /item:
+    get:
+      description: Возвращает массив товара
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Items'
+                  type: array
+              type: object
+        "400":
+          description: Items not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить весь товар
+      tags:
+      - item
+    post:
+      consumes:
+      - application/json
+      description: Возвращает ID созданного товара
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t create item
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Создать товар
+      tags:
+      - item
+  /item/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет товар по id и возвращает флаг true
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: 'error": "error": "Can`t delete item'
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Удалить товар
+      tags:
+      - item
+    get:
+      description: Возвращает товар с указанным id
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Items'
+              type: object
+        "400":
+          description: Item not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить один товар
+      tags:
+      - item
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет товар по ID и возвращает ID этого товара
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t update iten
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Обновить товар
+      tags:
+      - item
+  /order:
+    get:
+      description: Возвращает массив заказов
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Orders'
+                  type: array
+              type: object
+        "400":
+          description: Orders not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить все заказы
+      tags:
+      - order
+    post:
+      consumes:
+      - application/json
+      description: Возвращает ID созданного пользователя
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateOrdersInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t create order
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Создать заказ
+      tags:
+      - order
+  /order/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет заказ по id и возвращает флаг true
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: 'error": "error": "Can`t delete order'
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Удалить заказ
+      tags:
+      - order
+    get:
+      description: Возвращает заказ с указанным id
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Orders'
+              type: object
+        "400":
+          description: Order not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить однин заказ
+      tags:
+      - order
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет заказ по id и возвращает ID этого заказа
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateOrdersInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t update order
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Обновить заказ
+      tags:
+      - order
+  /user:
+    get:
+      description: Возвращает массив пользователей
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Users'
+                  type: array
+              type: object
+        "400":
+          description: Users not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить всех пользователей
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: Возвращает ID созданного пользователя
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t create user
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Создать пользователя
+      tags:
+      - user
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пользователя по id и возвращает флаг true
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  type: boolean
+              type: object
+        "400":
+          description: 'error": "error": "Can`t delete user'
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Удалить пользователя
+      tags:
+      - user
+    get:
+      description: Возвращает пользователя с указанным id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Users'
+              type: object
+        "400":
+          description: User not found!
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Получить одного пользователя
+      tags:
+      - user
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет пользователя по ID и возвращает ID этого пользователя
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ResponseCustom'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.ResponseID'
+              type: object
+        "400":
+          description: Can`t update user
+          schema:
+            allOf:
+            - $ref: '#/definitions/controllers.ErrorResponse'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Обновить пользователя
+      tags:
+      - user
+swagger: "2.0"
